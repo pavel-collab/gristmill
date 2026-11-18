@@ -10,6 +10,7 @@ const CLOUD_CHAT_PROVIDERS = new Set([
 ]);
 
 export type ChatRoute =
+  | { kind: "codex"; baseUrl: string; apiKey: string }
   | { kind: "agent"; baseUrl: string; apiKey: string }
   | { kind: "self-hosted"; baseUrl: string; apiKey: string }
   | { kind: "enterprise"; baseUrl: string; apiKey: string }
@@ -45,6 +46,8 @@ export function resolveChatRoute({
       apiKey: customApiKey?.trim() || "",
     };
   }
+
+  if (provider === "codex") return { kind: "codex", baseUrl: "", apiKey: "" };
 
   if (isEnterpriseProvider) {
     return { kind: "enterprise", baseUrl: "", apiKey: "" };

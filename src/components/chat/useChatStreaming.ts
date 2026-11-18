@@ -201,7 +201,10 @@ export function useChatStreaming({
         isLocalProvider && estimateModelSizeB(llmConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
 
       const supportsTools =
-        !sendOptions?.disableTools && !isBbAgent && (!isLocalProvider || localModelCanUseTool);
+        !sendOptions?.disableTools &&
+        route.kind !== "codex" &&
+        !isBbAgent &&
+        (!isLocalProvider || localModelCanUseTool);
 
       const scope = searchScopeRef.current;
       let registry: ToolRegistry | null = null;

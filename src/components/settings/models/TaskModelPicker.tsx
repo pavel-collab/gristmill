@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { useSettingsStore, setResolvedLLMConfig } from "../../../stores/settingsStore";
@@ -43,6 +43,7 @@ import {
   localGroups,
   matchesQuery,
   type CatalogGroup,
+  type CatalogModel,
 } from "./taskCatalog";
 import {
   isSpeechTask,
@@ -625,7 +626,29 @@ function CloudTab({ task, selection }: { task: ModelTask; selection: TaskSelecti
   const [query, setQuery] = useState("");
   const [form, setForm] = useState<"openrouter" | "custom" | null>(null);
   const { models: tinfoilModels } = useTinfoilModels(!isSpeechTask(task));
-  const groups = useMemo(() => cloudGroups(task, t, tinfoilModels), [task, t, tinfoilModels]);
+  const [codexModels, setCodexModels] = useState<CatalogModel[]>([]);
+  const speech = isSpeechTask(task);
+
+  useEffect(() => {
+    if (speech) return;
+    let active = true;
+
+    window.electronAPI
+      ?.listCodexModels?.()
+      .then((models) => {
+        if (active) setCodexModels(models);
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, [speech]);
+
+  const groups = useMemo(
+    () => cloudGroups(task, t, tinfoilModels, codexModels),
+    [task, t, tinfoilModels, codexModels]
+  );
 
   if (form) {
     const group = groups.find((item) => item.form === form);

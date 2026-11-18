@@ -55,7 +55,7 @@ function hasEnterpriseStreaming(
 }
 
 export function createEnterpriseChatModel(
-  provider: EnterpriseProvider,
+  provider: EnterpriseProvider | "codex",
   modelId: string
 ): LanguageModelV3 {
   return {
@@ -92,7 +92,7 @@ export function createEnterpriseChatModel(
       }
 
       const streamId = crypto.randomUUID();
-      const config = getEnterpriseCallSettings(provider);
+      const config = provider === "codex" ? undefined : getEnterpriseCallSettings(provider);
       let unsubscribe: (() => void) | undefined;
       let settled = false;
       // Assigned once the stream exists; abort cannot fire before that

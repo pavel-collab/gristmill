@@ -731,6 +731,32 @@ function registerEnterpriseStreamHandlers(
       let runtime: EnterpriseRuntime | undefined;
 
       try {
+        if (provider === "codex") {
+          const { runCodexChat, codexChatPrompt } = await import("./codexText.js");
+
+          const text = await runCodexChat(
+            modelId,
+            codexChatPrompt.parse(options.prompt),
+            controller.signal
+          );
+
+          if (maySendTerminal()) {
+            send({ part: { type: "text-start", id: streamId } });
+            send({ part: { type: "text-delta", id: streamId, delta: text } });
+            send({ part: { type: "text-end", id: streamId } });
+            send({
+              part: {
+                type: "finish",
+                finishReason: { unified: "stop" },
+                usage: { inputTokens: {}, outputTokens: {} },
+              },
+            });
+            send({ done: true });
+          }
+
+          return { success: true };
+        }
+
         if (!deps.isEnterpriseProvider(provider)) {
           throw new Error(`Unsupported enterprise provider: ${provider}`);
         }
@@ -822,6 +848,11 @@ export function registerReasoningHandlers(
   ipcMain: ReasoningIpcMain,
   deps: ReasoningHandlerDeps
 ): void {
+  ipcMain.handle(reasoningChannels.listCodexModels, async () => {
+    const { listCodexModels } = await import("./codexText.js");
+
+    return listCodexModels();
+  });
   registerLocalHandlers(ipcMain, deps);
   registerAnthropicHandler(ipcMain, deps);
   registerEnterpriseOneShotHandlers(ipcMain, deps);

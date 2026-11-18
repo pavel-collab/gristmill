@@ -60,6 +60,7 @@
     "!**/node_modules/**/.github/**"
   ],
   "asarUnpack": [
+    "**/node_modules/@openai/codex-darwin-arm64/**/*",
     "**/node_modules/ffmpeg-static/**/*",
     "**/node_modules/ps-list/**/*",
     "**/node_modules/better-sqlite3/**/*",

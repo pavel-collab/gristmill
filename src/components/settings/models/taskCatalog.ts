@@ -38,7 +38,8 @@ const describe = (t: TFunction, model: { description: string; descriptionKey?: s
 export function cloudGroups(
   task: ModelTask,
   t: TFunction,
-  tinfoilModels: CloudModelDefinition[]
+  tinfoilModels: CloudModelDefinition[],
+  codexModels: CatalogModel[] = []
 ): CatalogGroup[] {
   if (isSpeechTask(task)) {
     const providers =
@@ -95,6 +96,17 @@ export function cloudGroups(
   });
 
   groups.push(
+    {
+      providerId: "codex",
+      name: "Codex",
+      models: [
+        {
+          id: "codex-default",
+          name: t("modelsSettings.picker.codexDefault", { defaultValue: "Codex default" }),
+        },
+        ...codexModels,
+      ],
+    },
     { providerId: "openrouter", name: "OpenRouter", models: [], form: "openrouter" },
     {
       providerId: "custom",
@@ -109,6 +121,8 @@ export function cloudGroups(
 
 /** Name of a cloud model for trigger labels; free-form ids show as typed. */
 export function cloudModelName(task: ModelTask, providerId: string, modelId: string): string {
+  if (providerId === "codex" && modelId === "codex-default") return "Codex (ChatGPT)";
+
   const providers = isSpeechTask(task)
     ? getTranscriptionProviders()
     : modelRegistry.getCloudProviders();
@@ -121,6 +135,8 @@ export function cloudModelName(task: ModelTask, providerId: string, modelId: str
 }
 
 export function cloudProviderName(task: ModelTask, providerId: string, t: TFunction): string {
+  if (providerId === "codex") return "Codex";
+
   if (providerId === "custom") return t("modelsSettings.picker.customEndpoint");
 
   if (providerId === "openrouter") return "OpenRouter";

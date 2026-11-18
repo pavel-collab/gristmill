@@ -42,6 +42,10 @@ test("meeting model choices are only models the post-Stop file worker can proces
   const { resolveTranscriptionRoute } = await vite.ssrLoadModule("/helpers/transcriptionRoute.ts");
   const { cloudGroups } = await vite.ssrLoadModule("/components/settings/models/taskCatalog.ts");
   const translate = (key: string) => key;
+  for (const task of ["chatIntelligence", "noteFormatting"]) {
+    const catalog: CatalogGroup[] = cloudGroups(task, translate, [], [{ id: "account-model", name: "Account model" }]);
+    assert.deepEqual(catalog.find(group => group.providerId === "codex")?.models.map(model => model.id), ["codex-default", "account-model"]);
+  }
   const providers = getMeetingFileTranscriptionProviders();
   assert.deepEqual(
     providers.map((provider: { id: string }) => provider.id),

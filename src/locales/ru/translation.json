@@ -2487,6 +2487,7 @@
       "noHarness": "Не выбран harness bb"
     },
     "picker": {
+      "codexDefault": "По умолчанию из Codex",
       "source": "Источник модели",
       "customEndpoint": "Свой endpoint",
       "openrouterAction": "Выбрать модель OpenRouter",

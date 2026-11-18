@@ -1,3 +1,4 @@
+import { startCodexTextSession } from "./codexText.js";
 import type { MeetingProcessingConfig } from "../contracts/meetingRecording.js";
 import { resolveSelfHostedOpenAIBase } from "../services/ai/openaiBaseCore.js";
 
@@ -71,6 +72,12 @@ export async function createMeetingTextConversation(
     disableThinking: summary.options?.disableThinking,
     requireCompleteOutput: true,
   };
+
+  if (summary.reasoningMode === "providers" && summary.provider === "codex") {
+    const thread = await startCodexTextSession(model, summary.instruction);
+
+    return { send: async (prompt) => ({ text: await thread(prompt, signal), refusal: false }) };
+  }
 
   if (summary.reasoningMode === "local") {
     const history: Array<{ role: "user" | "assistant"; text: string }> = [];

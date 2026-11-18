@@ -6,6 +6,7 @@
 // bundles the final preload with esbuild before packaging.
 import {
   reasoningChannels,
+  codexModelListSchema,
   localReasoningResultSchema,
   anthropicReasoningResultSchema,
   enterpriseReasoningResultSchema,
@@ -46,6 +47,7 @@ export function createReasoningBridge(ipcRenderer: IpcRendererLike): ReasoningAp
     ipcRenderer.invoke(channel, ...args).then((raw) => parseResult(schema, raw, channel));
 
   return {
+    listCodexModels: () => invokeParse(codexModelListSchema, reasoningChannels.listCodexModels),
     processLocalReasoning: (
       text: string,
       modelId: string,

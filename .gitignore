@@ -332,3 +332,5 @@ resources/licenses/meeting-resampler/meeting-resampler.c
 resources/licenses/meeting-resampler/build-meeting-resampler.cts
 resources/licenses/meeting-resampler/build.json
 resources/licenses/meeting-resampler/BUILDING.md
+
+/dist-codex-models/

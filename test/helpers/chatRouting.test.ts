@@ -80,3 +80,9 @@ test("blank Chat LAN URL does not activate self-hosted routing", async () => {
 
   assert.equal(route.kind, "provider");
 });
+
+test("Codex uses subscription routing even with a stale custom key", async () => {
+  const { resolveChatRoute } = await load();
+  assert.deepEqual(resolveChatRoute({ mode: "providers", provider: "codex", customApiKey: "stale" }),
+    { kind: "codex", baseUrl: "", apiKey: "" });
+});

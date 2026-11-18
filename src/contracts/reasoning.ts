@@ -14,6 +14,7 @@ import { z } from "zod";
 // --- Channels and events ----------------------------------------------------
 
 export const reasoningChannels = {
+  listCodexModels: "list-codex-models",
   processLocalReasoning: "process-local-reasoning",
   checkLocalReasoningAvailable: "check-local-reasoning-available",
   processAnthropicReasoning: "process-anthropic-reasoning",
@@ -222,7 +223,12 @@ export type EnterpriseStreamEnvelope = z.infer<typeof enterpriseStreamEnvelopeSc
 
 // --- Renderer-facing API -----------------------------------------------------
 
+export const codexModelListSchema = z.array(z.object({ id: z.string(), name: z.string() }));
+
+export type CodexModel = z.infer<typeof codexModelListSchema>[number];
+
 export interface ReasoningApi {
+  listCodexModels(): Promise<CodexModel[]>;
   processLocalReasoning(
     text: string,
     modelId: string,

@@ -996,7 +996,7 @@ class ReasoningService extends BaseReasoningService {
     let apiKey = "";
     let baseURL: string | undefined;
 
-    if (isEnterprise) {
+    if (isEnterprise || route.kind === "codex") {
       // Enterprise SDKs run in the main process; the model below proxies
       // doStream over IPC, so no key or base URL is resolved here.
     } else if (isLanChat) {
@@ -1052,13 +1052,16 @@ class ReasoningService extends BaseReasoningService {
 
     const hasProviderOptions = Object.keys(providerOptions).length > 0;
 
-    const aiModel = isEnterprise
-      ? // SAFETY: resolveChatRoute only returns the enterprise route after
-        // isEnterpriseProvider(provider) passed, so the narrowed type holds.
-        createEnterpriseChatModel(provider as EnterpriseProvider, model)
-      : await getAIModel(aiProvider, model, apiKey, baseURL, {
-          disableThinking: openrouterDisableThinking,
-        });
+    const aiModel =
+      route.kind === "codex"
+        ? createEnterpriseChatModel("codex", model)
+        : isEnterprise
+          ? // SAFETY: resolveChatRoute only returns the enterprise route after
+            // isEnterpriseProvider(provider) passed, so the narrowed type holds.
+            createEnterpriseChatModel(provider as EnterpriseProvider, model)
+          : await getAIModel(aiProvider, model, apiKey, baseURL, {
+              disableThinking: openrouterDisableThinking,
+            });
 
     if (abortController.signal.aborted) {
       yield { type: "done", finishReason: "stop" };

@@ -2481,6 +2481,7 @@
       "noHarness": "No bb harness selected"
     },
     "picker": {
+      "codexDefault": "Codex default",
       "source": "Model source",
       "customEndpoint": "Custom endpoint",
       "openrouterAction": "Browse OpenRouter models",
