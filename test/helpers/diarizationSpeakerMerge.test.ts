@@ -22,6 +22,29 @@ const systemSegment = (timestamp: number, text: string) => ({ source: "system", 
 
 const micSegment = (timestamp: number, text: string) => ({ source: "mic", timestamp, text });
 
+test("diarization converts a 24 kHz meeting mix to 16 kHz mono and cleans its temporary file", async (t) => {
+  const fs: typeof import("node:fs") = require("node:fs");
+  const os: typeof import("node:os") = require("node:os");
+  const path: typeof import("node:path") = require("node:path");
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "meeting-diarization-test-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const manager = new DiarizationManager();
+  const input = path.join(directory, "meeting.wav");
+  fs.writeFileSync(input, Buffer.concat([manager._createWavHeader(48000, 24000, 1), Buffer.alloc(48000)]));
+  let converted = "";
+  t.mock.method(manager, "_diarize16k", async (file: string) => {
+    converted = file;
+    const wav = fs.readFileSync(file);
+    assert.equal(wav.readUInt32LE(24), 16000);
+    assert.equal(wav.readUInt16LE(22), 1);
+    throw new Error("synthetic diarizer failure");
+  });
+  await assert.rejects(manager.diarize(input), /synthetic diarizer failure/);
+  assert.ok(converted);
+  assert.equal(fs.existsSync(converted), false);
+  assert.equal(fs.existsSync(input), true);
+});
+
 test("a segment between clusters takes the nearest cluster, not the first", () => {
   const manager = new DiarizationManager();
 

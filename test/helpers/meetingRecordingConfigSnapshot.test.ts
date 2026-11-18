@@ -51,6 +51,18 @@ test("new Local snapshots enable diarization despite a removed preference; saved
   const reprocessed = await snapshotMeetingRecordingConfig(saved);
   assert.equal(reprocessed.configError, null);
   assert.deepEqual(reprocessed.config.transcription, saved);
+
+  useSettingsStore.setState({
+    noteFormattingMode: "providers",
+    noteFormattingProvider: "custom",
+    noteFormattingModel: "example-summary-model",
+    noteFormattingCloudBaseUrl: "https://models.example.com/v1",
+    noteFormattingCustomApiKey: "synthetic-summary-key",
+  });
+  const customSummary = await snapshotMeetingRecordingConfig(saved);
+  assert.equal(customSummary.configError, null);
+  assert.equal(customSummary.config.summary.credentialRef, "NOTE_FORMATTING_CUSTOM_API_KEY");
+  assert.equal(JSON.stringify(customSummary).includes("synthetic-summary-key"), false);
 });
 
 test("saved transcription bypasses an unsupported current meeting route while snapshotting current summary settings", async (t: import("node:test").TestContext) => {

@@ -382,6 +382,25 @@ export class DiarizationManager {
   }
 
   async diarize(wavPath: string, options: DiarizeOptions = {}): Promise<DiarizationSegment[]> {
+    if (options.signal?.aborted) return [];
+    // Meeting mixes use 24 kHz; sherpa's diarizer requires mono 16 kHz WAV.
+    const directory = await fsPromises.mkdtemp(path.join(getSafeTempDir(), "gristmill-diarize-"));
+    const convertedPath = path.join(directory, "input.wav");
+
+    try {
+      await convertToWav(wavPath, convertedPath, {
+        sampleRate: 16000,
+        channels: 1,
+        signal: options.signal ?? undefined,
+      });
+
+      return await this._diarize16k(convertedPath, options);
+    } finally {
+      await fsPromises.rm(directory, { recursive: true, force: true });
+    }
+  }
+
+  async _diarize16k(wavPath: string, options: DiarizeOptions = {}): Promise<DiarizationSegment[]> {
     const { numSpeakers = -1, threshold = 0.55, signal = null } = options;
 
     if (signal?.aborted) return [];

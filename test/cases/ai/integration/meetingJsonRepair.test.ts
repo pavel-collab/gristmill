@@ -45,6 +45,28 @@ const namingInput = {
   ],
 };
 
+test("saved custom summary runs use the dedicated summary key before the legacy cleanup key", async () => {
+  for (const hasSummaryKey of [true, false]) {
+    let selectedKey = "";
+    await createMeetingTextConversation(
+      { ...summaryConfig, provider: "custom", credentialRef: "CUSTOM_CLEANUP_API_KEY", cloudBaseUrl: "https://models.example.com/v1" },
+      {
+        getAIModel: async (_provider: string, _model: string, key: string) => {
+          selectedKey = key;
+          return {};
+        },
+        generateText: async () => ({ text: "Synthetic summary" }),
+        processLocalText: async () => { throw new Error("Unexpected local route"); },
+        getCredential: (reference: string) => reference === "NOTE_FORMATTING_CUSTOM_API_KEY"
+          ? (hasSummaryKey ? "synthetic-summary-key" : "")
+          : "synthetic-cleanup-key",
+      },
+      new AbortController().signal
+    );
+    assert.equal(selectedKey, hasSummaryKey ? "synthetic-summary-key" : "synthetic-cleanup-key");
+  }
+});
+
 test("selected provider repairs schema-invalid speaker JSON once in the same conversation", async () => {
   const generated: Array<Record<string, any>> = [];
   const built: unknown[] = [];

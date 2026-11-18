@@ -136,7 +136,11 @@ export async function snapshotMeetingRecordingConfig(
         ? { remoteUrl: formatting.remoteUrl }
         : {}),
       ...(formatting.mode === "providers" && formatting.provider === "custom"
-        ? { credentialRef: "CUSTOM_CLEANUP_API_KEY" }
+        ? {
+            credentialRef: state.noteFormattingCustomApiKey
+              ? "NOTE_FORMATTING_CUSTOM_API_KEY"
+              : "CUSTOM_CLEANUP_API_KEY",
+          }
         : {}),
       ...(formatting.mode === "enterprise"
         ? {

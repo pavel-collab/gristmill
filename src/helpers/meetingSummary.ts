@@ -172,7 +172,14 @@ export async function createMeetingTextConversation(
 
     if (provider === "custom" && !summary.cloudBaseUrl)
       throw codedError("reasoning-endpoint-missing");
-    const apiKey = deps.getCredential(summary.credentialRef, provider);
+
+    // Older meeting snapshots incorrectly referenced the cleanup key even
+    // when the user configured a dedicated Meeting summary endpoint key.
+    const apiKey =
+      provider === "custom" && summary.credentialRef === "CUSTOM_CLEANUP_API_KEY"
+        ? deps.getCredential("NOTE_FORMATTING_CUSTOM_API_KEY", provider) ||
+          deps.getCredential(summary.credentialRef, provider)
+        : deps.getCredential(summary.credentialRef, provider);
 
     if (!apiKey) throw codedError("api-key-missing");
     languageModel = await deps.getAIModel(provider, model, apiKey, summary.cloudBaseUrl, {
